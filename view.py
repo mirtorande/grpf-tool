@@ -3,6 +3,7 @@ from matplotlib.patches import Circle, Rectangle
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
+from math import floor
 
 Colors = ['green', 'blue', 'orange']
 
@@ -28,6 +29,7 @@ class Animation:
 
         self.patches = []
         self.artists = []
+        self.goal_predictions = dict()
         # create boundary patch
 
         x_min = -0.5
@@ -43,12 +45,17 @@ class Animation:
                 if self.my_map[i][j]:
                     self.patches.append(Rectangle((i - 0.5, j - 0.5), 1, 1, facecolor='gray', edgecolor='gray'))
 
-        # create agent:
+        # create agent and goals:
         self.T = 0
         for i, goal in enumerate(self.goals):
             self.patches.append(Rectangle((goal[0] - 0.25, goal[1] - 0.25), 0.5, 0.5, facecolor=Colors[i % len(Colors)],
                                           edgecolor='black', alpha=0.5))
-        name = str(0)
+            self.goal_predictions[i] = self.ax.text(self.goals[i][0], self.goals[i][1], str(i))
+            self.goal_predictions[i].set_horizontalalignment('center')
+            self.goal_predictions[i].set_verticalalignment('center')
+            self.artists.append(self.goal_predictions[i])
+
+        name = "agent"
         self.agent = Circle((start[0], start[1]), 0.3, facecolor=Colors[i % len(Colors)],
                                 edgecolor='black')
         self.agent.original_face_color = Colors[i % len(Colors)]
@@ -83,10 +90,14 @@ class Animation:
             self.ax.add_artist(a)
         return self.patches + self.artists
 
+    # Animation
     def animate_func(self, t):
         pos = self.get_state(t / 10, self.path)
         self.agent.center = (pos[0], pos[1])
         self.agent_name.set_position((pos[0], pos[1] + 0.5))
+
+        for i in self.goal_predictions:
+            self.goal_predictions[i].set_text("{:.2f}".format(self.predictions[floor(t/10)][i]*100))
 
         return self.patches + self.artists
 

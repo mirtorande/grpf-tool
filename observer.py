@@ -54,4 +54,5 @@ class Observer(object):
             normalized_prediction = [float(i)/sum(prediction) for i in prediction]
             self.predictions[time] = normalized_prediction
         print("Observer predictions: ", self.predictions)
+        return self.predictions
 
