@@ -1,4 +1,5 @@
 from single_agent_planner import compute_heuristics, a_star
+import numpy as np
 
 class Observer(object):
     """An observer that tries to predit the goal of an agent."""
@@ -29,6 +30,14 @@ class Observer(object):
             initial_prediction.append(1/n_goals)
         self.predictions[0] = initial_prediction"""
     
+    # calcola entropia
+    def entropy(self, probs):
+        ent = 0.
+        for i in probs:
+            ent -= i * np.log(i)
+        ent /= np.log(len(probs))
+        return ent
+
     # algoritmo stub, andrà poi reso separabile dalla classe
     # (o create classi interscambiabili come è stato fatto per gli agent solver)
     def elaborate_predictions(self):
@@ -53,6 +62,5 @@ class Observer(object):
                     prediction.append(sum_of_lengths/p_l)
             normalized_prediction = [float(i)/sum(prediction) for i in prediction]
             self.predictions[time] = normalized_prediction
-        print("Observer predictions: ", self.predictions)
+            print(time, ": ", self.entropy(normalized_prediction))
         return self.predictions
-
