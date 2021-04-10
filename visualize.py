@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-from matplotlib.patches import Circle, Rectangle
+from matplotlib.patches import Circle, Rectangle, ConnectionPatch
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
+from math import floor
 
-Colors = ['green', 'blue', 'orange']
+Colors = ['green', 'purple', 'orange', 'red', 'blue', 'yellow']
 
 
 class Animation:
-    def __init__(self, my_map, starts, goals, paths):
+    def __init__(self, my_map, starts, goals, paths, predictions):
         self.my_map = np.flip(np.transpose(my_map), 1)
+        self.predictions = predictions
         self.starts = []
         for start in starts:
             self.starts.append((start[1], len(self.my_map[0]) - 1 - start[0]))
@@ -34,6 +36,8 @@ class Animation:
         self.artists = []
         self.agents = dict()
         self.agent_names = dict()
+        self.goal_predictions = dict()
+        self.agent_goal_connections = dict()
         # create boundary patch
 
         x_min = -0.5
@@ -49,23 +53,37 @@ class Animation:
                 if self.my_map[i][j]:
                     self.patches.append(Rectangle((i - 0.5, j - 0.5), 1, 1, facecolor='gray', edgecolor='gray'))
 
-        # create agents:
         self.T = 0
-        # draw goals first
+        # draw goals
         for i, goal in enumerate(self.goals):
-            self.patches.append(Rectangle((goal[0] - 0.25, goal[1] - 0.25), 0.5, 0.5, facecolor=Colors[i % len(Colors)],
+            goal_color = Colors[i % len(Colors)]
+            self.patches.append(Rectangle((goal[0] - 0.25, goal[1] - 0.25), 0.5, 0.5, facecolor=goal_color,
                                           edgecolor='black', alpha=0.5))
-        for i in range(len(self.paths)):
-            name = str(i)
-            self.agents[i] = Circle((starts[i][0], starts[i][1]), 0.3, facecolor=Colors[i % len(Colors)],
+        
+        # create agents
+        for a in range(len(self.paths)):
+            name = str(a)
+            self.agents[a] = Circle((starts[a][0], starts[a][1]), 0.3, facecolor=Colors[a % len(Colors)],
                                     edgecolor='black')
-            self.agents[i].original_face_color = Colors[i % len(Colors)]
-            self.patches.append(self.agents[i])
-            self.T = max(self.T, len(paths[i]) - 1)
-            self.agent_names[i] = self.ax.text(starts[i][0], starts[i][1] + 0.25, name)
-            self.agent_names[i].set_horizontalalignment('center')
-            self.agent_names[i].set_verticalalignment('center')
-            self.artists.append(self.agent_names[i])
+            self.agents[a].original_face_color = Colors[a % len(Colors)]
+            self.patches.append(self.agents[a])
+            self.T = max(self.T, len(paths[a]) - 1)
+            self.agent_names[a] = self.ax.text(starts[a][0], starts[a][1] + 0.25, name)
+            self.agent_names[a].set_horizontalalignment('center')
+            self.agent_names[a].set_verticalalignment('center')
+            self.artists.append(self.agent_names[a])
+
+            # connections & predictions
+            self.goal_predictions[a] = dict()
+            self.agent_goal_connections[a] = dict()
+            for i, goal in enumerate(self.goals):
+                goal_color = Colors[i % len(Colors)]
+                self.goal_predictions[a][i] = self.ax.text(goal[0], goal[1], str(i))
+                self.goal_predictions[a][i].set_horizontalalignment('center')
+                self.goal_predictions[a][i].set_verticalalignment('center')
+                self.artists.append(self.goal_predictions[a][i])
+                self.agent_goal_connections[a][i] = plt.Line2D((start[1], goal[0]), (len(self.my_map[0]) - 1 - start[0], goal[1]), lw=2.5, color = goal_color)
+                self.artists.append(self.agent_goal_connections[a][i])
 
         self.animation = animation.FuncAnimation(self.fig, self.animate_func,
                                                  init_func=self.init_func,
@@ -92,10 +110,27 @@ class Animation:
         return self.patches + self.artists
 
     def animate_func(self, t):
-        for k in range(len(self.paths)):
-            pos = self.get_state(t / 10, self.paths[k])
-            self.agents[k].center = (pos[0], pos[1])
-            self.agent_names[k].set_position((pos[0], pos[1] + 0.5))
+        # per ogni agente
+        for a in range(len(self.paths)):
+            pos = self.get_state(t / 10, self.paths[a])
+            self.agents[a].center = (pos[0], pos[1])
+            self.agent_names[a].set_position((pos[0], pos[1] + 0.5))
+            # per ogni goal
+            print(self.agent_goal_connections[a])
+            for i in self.agent_goal_connections[a]:
+                timestep = floor(t/10)
+                if timestep not in self.predictions[a]:
+                    continue
+
+                prediction = self.predictions[a][timestep][i]
+                # Linee
+                self.agent_goal_connections[a][i].set_data([pos[0], self.goals[i][0]], [pos[1], self.goals[i][1]])
+                self.agent_goal_connections[a][i].set_alpha(prediction)
+                # Percentuali
+                self.goal_predictions[a][i].set_text("{:.2f}".format(prediction*100))
+                self.goal_predictions[a][i].set_position([(pos[0] + self.goals[i][0])/2, (pos[1] + self.goals[i][1])/2])
+                self.goal_predictions[a][i].set_alpha(prediction)
+
 
         # reset all colors
         for _, agent in self.agents.items():

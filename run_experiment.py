@@ -7,10 +7,11 @@ from independent import IndependentSolver
 from prioritized import PrioritizedPlanningSolver
 from visualize import Animation
 from single_agent_planner import get_sum_of_cost
+from shortest_distance_observer import SDObserver
 
 SOLVER = "CBS"
 
-def print_mapf_instance(my_map, starts, goals):
+def print_experiment_instance(my_map, starts, goals):
     print('Start locations')
     print_locations(my_map, starts)
     print('Goal locations')
@@ -33,12 +34,13 @@ def print_locations(my_map, locations):
         to_print += '\n'
     print(to_print)
 
-
-def import_mapf_instance(filename):
+def import_environment(filename):
+    print("fin qua")
     f = Path(filename)
     if not f.is_file():
         raise BaseException(filename + " does not exist.")
     f = open(filename, 'r')
+    print("file aperto")
     # first line: #rows #columns
     line = f.readline()
     rows, columns = [int(x) for x in line.split(' ')]
@@ -54,19 +56,46 @@ def import_mapf_instance(filename):
                 my_map[-1].append(True)
             elif cell == '.':
                 my_map[-1].append(False)
+    # next line: #goals
+    line = f.readline()
+    num_goals = int(line)
+    goals = []
+    for g in range(num_goals):
+        line = f.readline()
+        gx, gy = [int(x) for x in line.split(' ')]
+        goals.append((gx, gy))
+    f.close()
+    return my_map, goals
+
+
+
+def import_experiment(filename):
+    f = Path(filename)
+    if not f.is_file():
+        raise BaseException(filename + " does not exist.")
+    f = open(filename, 'r')
+    # first line: environment ID
+    line = f.readline()
+    my_map, goals = import_environment("instances/"+line.rstrip()+".txt")
+    
     # #agents
     line = f.readline()
     num_agents = int(line)
-    # #agents lines with the start/goal positions
+    # #agents lines with the start positions
     starts = []
-    goals = []
     for a in range(num_agents):
         line = f.readline()
-        sx, sy, gx, gy = [int(x) for x in line.split(' ')]
+        sx, sy = [int(x) for x in line.split(' ')]
         starts.append((sx, sy))
-        goals.append((gx, gy))
+    # agent goals
+    agent_goals = []
+    for a in range(num_agents):
+        line = f.readline()
+        goal_id = int(line)
+        agent_goals.append(goals[goal_id])
+
     f.close()
-    return my_map, starts, goals
+    return my_map, starts, goals, agent_goals
 
 
 if __name__ == '__main__':
@@ -88,23 +117,28 @@ if __name__ == '__main__':
     for file in sorted(glob.glob(args.instance)):
 
         print("***Import an instance***")
-        my_map, starts, goals = import_mapf_instance(file)
-        print_mapf_instance(my_map, starts, goals)
+        my_map, starts, goals, agent_goals = import_experiment(file)
+        print(starts, agent_goals)
+        print_experiment_instance(my_map, starts, goals)
 
         if args.solver == "CBS":
             print("***Run CBS***")
-            cbs = CBSSolver(my_map, starts, goals)
+            cbs = CBSSolver(my_map, starts, agent_goals)
             paths = cbs.find_solution(args.disjoint)
         elif args.solver == "Independent":
             print("***Run Independent***")
-            solver = IndependentSolver(my_map, starts, goals)
+            solver = IndependentSolver(my_map, starts, agent_goals)
             paths = solver.find_solution()
         elif args.solver == "Prioritized":
             print("***Run Prioritized***")
-            solver = PrioritizedPlanningSolver(my_map, starts, goals)
+            solver = PrioritizedPlanningSolver(my_map, starts, agent_goals)
             paths = solver.find_solution()
         else:
             raise RuntimeError("Unknown solver!")
+
+        # Observer
+        observer = SDObserver(my_map, paths, starts, goals)
+        predictions = observer.elaborate_predictions()
 
         cost = get_sum_of_cost(paths)
         result_file.write("{},{}\n".format(file, cost))
@@ -112,7 +146,7 @@ if __name__ == '__main__':
 
         if not args.batch:
             print("***Test paths on a simulation***")
-            animation = Animation(my_map, starts, goals, paths)
+            animation = Animation(my_map, starts, goals, paths, predictions)
             # animation.save("output.mp4", 1.0)
             animation.show()
     result_file.close()
