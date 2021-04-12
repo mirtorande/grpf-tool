@@ -8,6 +8,8 @@ from prioritized import PrioritizedPlanningSolver
 from visualize import Animation
 from single_agent_planner import get_sum_of_cost
 from shortest_distance_observer import SDObserver
+import json
+import os
 
 SOLVER = "CBS"
 
@@ -111,10 +113,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # result_file = open("results.csv", "w", buffering=1)
 
-    result_file = open("results.csv", "w", buffering=1)
-
-    for file in sorted(glob.glob(args.instance)):
+    for file in sorted(glob.glob("instances/" + args.instance)):
 
         print("***Import an instance***")
         my_map, starts, goals, agent_goals = import_experiment(file)
@@ -141,12 +142,24 @@ if __name__ == '__main__':
         predictions = observer.elaborate_predictions()
 
         cost = get_sum_of_cost(paths)
-        result_file.write("{},{}\n".format(file, cost))
+        solved_experiment = {
+            "map": my_map,
+            "starts": starts,
+            "goals": goals,
+            "agent_goals": agent_goals,
+            "paths": paths,
+            "predictions": predictions,
+            "cost": cost
+        }
 
+        simulation_result_filename = "solved-simulations/" + os.path.splitext(args.instance)[0] + "_" + args.solver.lower() + "_simulation.json"
 
-        if not args.batch:
-            print("***Test paths on a simulation***")
-            animation = Animation(my_map, starts, goals, paths, predictions)
+        with open(simulation_result_filename , "w" ) as writefile:
+            json.dump( solved_experiment , writefile )
+
+        #if not args.batch:
+            #print("***Test paths on a simulation***")
+            #animation = Animation(my_map, starts, goals, paths, predictions)
             # animation.save("output.mp4", 1.0)
-            animation.show()
-    result_file.close()
+            #animation.show()
+    writefile.close()

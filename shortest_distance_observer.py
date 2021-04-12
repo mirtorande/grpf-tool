@@ -69,5 +69,5 @@ class SDObserver(object):
                         prediction.append(sum_of_lengths/p_l)
                 normalized_prediction = [float(i)/sum(prediction) for i in prediction]
                 self.predictions[n_agent][time] = normalized_prediction
-                print("agent ", n_agent, " at ",time, ": ", self.entropy(normalized_prediction))
+                # print("agent ", n_agent, " at ",time, ": ", self.entropy(normalized_prediction))
         return self.predictions

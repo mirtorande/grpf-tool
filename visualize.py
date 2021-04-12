@@ -116,7 +116,6 @@ class Animation:
             self.agents[a].center = (pos[0], pos[1])
             self.agent_names[a].set_position((pos[0], pos[1] + 0.5))
             # per ogni goal
-            print(self.agent_goal_connections[a])
             for i in self.agent_goal_connections[a]:
                 timestep = floor(t/10)
                 if timestep not in self.predictions[a]:
