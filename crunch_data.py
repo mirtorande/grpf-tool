@@ -68,7 +68,6 @@ class DataCruncher(object):
                 step_prediction = self.predictions[n_agent][step]
                 this_guess = step_prediction.index(max(step_prediction))
                 guess[n_agent][step] = this_guess
-                print("guess a timestep", step, "=", this_guess)
 
                 # metric error (A* distance between guessed goal and actual goal)
                 path = a_star(self.my_map, self.agent_goals[n_agent], self.goals[this_guess], self.heuristics[this_guess],

@@ -38,12 +38,10 @@ def print_locations(my_map, locations):
     print(to_print)
 
 def import_environment(filename):
-    print("fin qua")
     f = Path(filename)
     if not f.is_file():
         raise BaseException(filename + " does not exist.")
     f = open(filename, 'r')
-    print("file aperto")
     # first line: #rows #columns
     line = f.readline()
     rows, columns = [int(x) for x in line.split(' ')]
@@ -120,7 +118,7 @@ if __name__ == '__main__':
 
         print("***Import an instance***")
         my_map, starts, goals, agent_goals = import_experiment(file)
-        print(starts, agent_goals)
+        #print(starts, agent_goals)
         print_experiment_instance(my_map, starts, goals)
 
         if args.solver == "CBS":

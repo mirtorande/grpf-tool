@@ -43,6 +43,7 @@ class PrioritizedPlanningSolver(object):
             #            * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
             #            * self.num_of_agents has the number of total agents
             #            * constraints: array of constraints to consider for future A* searches
+            prev_cell = ()
             for t, cell in enumerate(path):
                 for agent in range(i+1, self.num_of_agents):
                     constraints.append({'agent': agent, 'loc': [cell], 'timestep': t})
