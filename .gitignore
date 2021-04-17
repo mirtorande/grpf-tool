@@ -130,3 +130,6 @@ dmypy.json
 
 # video files
 .mp4
+
+# simulation results
+solved-simulations/*.json
