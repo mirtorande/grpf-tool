@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-from visualize import Animation
+from graphs import Graphs
+import pandas as pd
 import json
 
 def jsonKeys2int(x):
@@ -22,8 +23,8 @@ if __name__ == '__main__':
 
     with open( "solved-simulations/" + args.instance , "r" ) as readfile:
         data = json.load(readfile, object_hook=jsonKeys2int)
-        
-    print("***Test paths on a simulation***")
-    animation = Animation(data["map"], data["starts"], data["goals"], data["paths"], data["predictions"])
-    # animation.save("output.mp4", 1.0)
-    animation.show()
+    
+    print("***Showing graphs***")
+    graphs = Graphs(data["entropy"])
+    graphs.save("output/graphs.png")
+    graphs.show()
