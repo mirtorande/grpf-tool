@@ -25,7 +25,6 @@ class SDObserver(object):
 
         # initialize the prediction dictionary to 1/n_goals
         self.predictions = dict()
-        self.predictions2 = dict()
         """
         n_goals = len(self.goals)
         initial_prediction = []
@@ -40,12 +39,11 @@ class SDObserver(object):
         # per ogni agente
         for n_agent in range(self.num_of_agents):
             self.predictions[n_agent] = dict()
-            self.predictions2[n_agent] = dict()
             # per ogni passo
             #print(self.num_of_agents, self.paths)
             for time, step in enumerate(self.paths[n_agent]):
                 # calcola la distanza da tutte le uscite
-                big_N = 1000000000.0
+                big_N = 100000000000.0
                 path_lengths = []
 
                 for i, goal in enumerate(self.goals):
@@ -62,23 +60,13 @@ class SDObserver(object):
                 min_lenght = min(path_lengths)                
                 for i, p_l in enumerate(path_lengths):
                     if p_l == 0:
-                        prediction = [0] * len(path_lengths)
-                        prediction[i] = 1
-                        break
+                        prediction.append(big_N)
                     else:
-                        prediction.append(float((max_lenght-p_l)/(max_lenght-min_lenght)))
-
-                # predictions 2
-                prediction2 = []
-                sum_of_lenghts = sum(path_lengths)
-                for i, p_l in enumerate(path_lengths):
-                    if p_l == 0:
-                        prediction2.append(big_N)
-                    else:
-                        prediction2.append((p_l)/(sum_of_lenghts))
-                #print(prediction2)
-                normalized_prediction2 = [float(i)/sum(prediction2) for i in prediction2]
-
-                self.predictions[n_agent][time] = prediction
-                self.predictions2[n_agent][time] = normalized_prediction2
-        return self.predictions, self.predictions2
+                        # edge case in cui tutte le uscite sono equidistanti
+                        if max_lenght-min_lenght == 0:
+                            prediction.append(1.0)
+                        else:
+                            prediction.append(float((max_lenght-p_l)/(max_lenght-min_lenght)))
+                normalized_prediction = [float(i)/sum(prediction) for i in prediction]
+                self.predictions[n_agent][time] = normalized_prediction
+        return self.predictions

@@ -46,6 +46,9 @@ class Animation:
         y_max = len(self.my_map[0]) - 0.5
         plt.xlim(x_min, x_max)
         plt.ylim(y_min, y_max)
+        plt.xticks(np.arange(x_min, x_max, 1))
+        plt.yticks(np.arange(y_min, y_max, 1))
+        plt.grid(color='0.85')
 
         self.patches.append(Rectangle((x_min, y_min), x_max - x_min, y_max - y_min, facecolor='none', edgecolor='gray'))
         for i in range(len(self.my_map)):
@@ -96,7 +99,7 @@ class Animation:
             file_name,
             fps=10 * speed,
             dpi=200,
-            savefig_kwargs={"pad_inches": 0, "bbox_inches": "tight"})
+            savefig_kwargs={"pad_inches": 0})
 
     @staticmethod
     def show():

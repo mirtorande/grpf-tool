@@ -1,10 +1,12 @@
 from single_agent_planner import compute_heuristics, a_star
 import numpy as np
+import pandas as pd
+from scipy.stats import entropy as scipy_entropy
 
 class DataCruncher(object):
     """Class that calculates relevant statistics from the data found by the observer."""
 
-    def __init__(self, my_map, paths, starts, goals, agent_goals, predictions, predictions2):
+    def __init__(self, my_map, paths, starts, goals, agent_goals, predictions):
         """my_map   - list of lists specifying obstacle positions
         path      - [(x1, y1), (x2, y2), ...] list of the steps take by the agent
         goals       - [(x1, y1), (x2, y2), ...] list of goal locations
@@ -17,7 +19,6 @@ class DataCruncher(object):
         self.agent_goals = agent_goals
         self.num_of_agents = len(starts)
         self.predictions = predictions
-        self.predictions2 = predictions2
 
         self.CPU_time = 0
 
@@ -29,10 +30,10 @@ class DataCruncher(object):
     # calculate entropy at a specific timestep
     def entropy_at_timestep(self, probs):
         ent = 0.0
-        for i in probs:
-            if i==0:
+        for p_i in probs:
+            if p_i==0:
                 continue
-            ent -= i * np.log2(i)
+            ent -= p_i * np.log2(i)
         ent /= np.log2(len(probs))
         return ent
 
@@ -41,20 +42,11 @@ class DataCruncher(object):
 
         for n_agent, _ in enumerate(self.predictions):
             entropy[n_agent] = dict()
+            possibile_goals = len(self.predictions[n_agent])
             for step, _ in enumerate(self.predictions[n_agent]):
-                entropy[n_agent][step] = self.entropy_at_timestep(self.predictions[n_agent][step])
+                entropy[n_agent][step] = scipy_entropy(self.predictions[n_agent][step], base=possibile_goals)
 
         return entropy
-    
-    def calculate_entropy2(self):
-        entropy2 = dict()
-
-        for n_agent, _ in enumerate(self.predictions2):
-            entropy2[n_agent] = dict()
-            for step, _ in enumerate(self.predictions2[n_agent]):
-                entropy2[n_agent][step] = self.entropy_at_timestep(self.predictions2[n_agent][step])
-
-        return entropy2
     
     def calculate_guess_and_metric_error(self):
         guess = dict()

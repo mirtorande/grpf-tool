@@ -138,10 +138,9 @@ if __name__ == '__main__':
 
         # Observer
         observer = SDObserver(my_map, paths, starts, goals)
-        predictions, predictions2 = observer.elaborate_predictions()
-        data_cruncher = DataCruncher(my_map, paths, starts, goals, agent_goals, predictions, predictions2)
+        predictions = observer.elaborate_predictions()
+        data_cruncher = DataCruncher(my_map, paths, starts, goals, agent_goals, predictions)
         entropy = data_cruncher.calculate_entropy()
-        entropy2 = data_cruncher.calculate_entropy2()
         guess, metric_error = data_cruncher.calculate_guess_and_metric_error()
 
         cost = get_sum_of_cost(paths)
@@ -153,7 +152,6 @@ if __name__ == '__main__':
             "paths": paths,
             "predictions": predictions,
             "entropy": entropy,
-            "entropy2": entropy2,
             "guess": guess,
             "metric_error": metric_error,
             "cost": cost

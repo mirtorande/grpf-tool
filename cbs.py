@@ -33,10 +33,8 @@ def detect_collisions(paths):
         for a2, path2 in enumerate(paths):
             if a1 == a2 or a1>a2:
                 continue
-            #print("combination:", a1, a2)
             collision = detect_collision(path1, path2)
             if collision == None:
-                print("no collisions")
                 continue
 
             collision['a1'] = a1
@@ -144,7 +142,7 @@ class CBSSolver(object):
         # Task 3.2: Testing
         for collision in root['collisions']:
             print(standard_splitting(collision))
-
+        
         ##############################
         # Task 3.3: High-Level Search
         #           Repeat the following as long as the open list is not empty:
@@ -155,18 +153,14 @@ class CBSSolver(object):
         #           Ensure to create a copy of any objects that your child nodes might inherit
         while self.open_list:
             P = self.pop_node()
-            #print("collision", P['collisions'])
             if not P['collisions']:
                 return P['paths']
             collision = P['collisions'][0]
             constraints = standard_splitting(collision)
-            #print("constraints", constraints)
             for constraint in constraints:
                 Q = {'cost': 0, 'constraints': [], 'paths': [], 'collisions': []}
                 Q['constraints'] = P['constraints'].copy()
-                #print("Q constraints", Q['constraints'])
-                if constraint not in Q['constraints']:
-                    Q['constraints'].append(constraint)
+                Q['constraints'].append(constraint)
                 Q['paths'] = P['paths'].copy()
                 agent_i = constraint['agent']
                 path = a_star(self.my_map, self.starts[agent_i], self.goals[agent_i], self.heuristics[agent_i],

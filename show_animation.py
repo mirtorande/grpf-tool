@@ -25,5 +25,5 @@ if __name__ == '__main__':
         
     print("***Test paths on a simulation***")
     animation = Animation(data["map"], data["starts"], data["goals"], data["paths"], data["predictions"])
-    # animation.save("output.mp4", 1.0)
+    #animation.save("output/animation.mp4", 1.0)
     animation.show()

@@ -48,13 +48,14 @@ class PrioritizedPlanningSolver(object):
                 for agent in range(i+1, self.num_of_agents):
                     constraints.append({'agent': agent, 'loc': [cell], 'timestep': t})
                     if t>0:
-                        constraints.append({'agent': agent, 'loc': [prev_cell, cell], 'timestep': t})
+                        # IMPORTANT the cells are inverted since the constraint is for the agent moving in the opposite direction
+                        constraints.append({'agent': agent, 'loc': [cell, prev_cell], 'timestep': t})
+                        print("edge contraint:", {'agent': agent, 'loc': [cell, prev_cell], 'timestep': t})
                 prev_cell = cell
 
             ##############################
 
         self.CPU_time = timer.time() - start_time
-
         print("\n Found a solution! \n")
         print("CPU time (s):    {:.2f}".format(self.CPU_time))
         print("Sum of costs:    {}".format(get_sum_of_cost(result)))

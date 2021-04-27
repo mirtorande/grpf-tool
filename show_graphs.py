@@ -25,6 +25,6 @@ if __name__ == '__main__':
         data = json.load(readfile, object_hook=jsonKeys2int)
     
     print("***Showing graphs***")
-    graphs = Graphs(data["entropy"], data["entropy2"], data["guess"], data ["metric_error"])
+    graphs = Graphs(data["entropy"], data["guess"], data ["metric_error"])
     graphs.save("output/graphs.png")
     graphs.show()

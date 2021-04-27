@@ -99,13 +99,10 @@ def is_constrained(curr_loc, next_loc, next_time, constraint_table):
         if len(c['loc']) == 1:
             # Vertex constraint
             if c['loc'][0] == next_loc:
-                print("vertex")
                 return True
         elif len(c['loc']) == 2:
-            print(curr_loc, next_loc, c['loc'][0], c['loc'][1])
             #Edge constraint
-            if c['loc'][1] == curr_loc and c['loc'][0] == next_loc:
-                print("edge")
+            if c['loc'][0] == curr_loc and c['loc'][1] == next_loc:
                 return True
     return False
 
