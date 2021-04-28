@@ -19,12 +19,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Visualizes a simulation')
     parser.add_argument('--instance', type=str, default=None,
                         help='The name of the instance file(s)')
+    parser.add_argument('--aggregation', type=str, default='mean',
+                        help='The name of the instance file(s)')
     args = parser.parse_args()
 
     with open( "solved-simulations/" + args.instance , "r" ) as readfile:
         data = json.load(readfile, object_hook=jsonKeys2int)
     
     print("***Showing graphs***")
-    graphs = Graphs(data["entropy"], data["guess"], data ["metric_error"])
-    graphs.save("output/graphs.png")
+    
+    if args.aggregation == 'mean':
+        entropy = data['mean_entropy']
+        metric_error = data['mean_metric_error']
+    elif args.aggregation == 'max':
+        entropy = data['max_entropy']
+        metric_error = data['max_metric_error']
+
+    graphs = Graphs(entropy, metric_error)
+    graphs.save("output/graphs_" + args.aggregation + ".png")
     graphs.show()

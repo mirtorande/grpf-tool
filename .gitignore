@@ -133,3 +133,6 @@ dmypy.json
 
 # simulation results
 solved-simulations/*.json
+
+# output
+output/*

@@ -27,6 +27,7 @@ class DataCruncher(object):
         for goal in self.goals:
             self.heuristics.append(compute_heuristics(my_map, goal))
 
+    """
     # calculate entropy at a specific timestep
     def entropy_at_timestep(self, probs):
         ent = 0.0
@@ -35,31 +36,47 @@ class DataCruncher(object):
                 continue
             ent -= p_i * np.log2(i)
         ent /= np.log2(len(probs))
-        return ent
+        return ent"""
 
     def calculate_entropy(self):
-        entropy = dict()
+        entropies = dict()
 
         for n_agent, _ in enumerate(self.predictions):
-            entropy[n_agent] = dict()
+            entropies[n_agent] = dict()
             possibile_goals = len(self.predictions[n_agent])
             for step, _ in enumerate(self.predictions[n_agent]):
-                entropy[n_agent][step] = scipy_entropy(self.predictions[n_agent][step], base=possibile_goals)
+                entropies[n_agent][step] = scipy_entropy(self.predictions[n_agent][step], base=possibile_goals)
 
-        return entropy
-    
-    def calculate_guess_and_metric_error(self):
-        guess = dict()
-        metric_error = dict()
+        # mean of entropies
+        mean_entropy = []
+        for step, _ in enumerate(entropies[0]):
+            step_values = []
+            for n_agent, _ in enumerate(entropies):
+                if step in entropies[n_agent]:
+                    step_values.append(entropies[n_agent][step])
+            mean_entropy.append(np.mean(step_values))
+
+        # maximum entropy for step
+        max_entropy = []
+        for step, _ in enumerate(entropies[0]):
+            step_values = []
+            for n_agent, _ in enumerate(entropies):
+                if step in entropies[n_agent]:
+                    step_values.append(entropies[n_agent][step])
+            max_entropy.append(max(step_values))
+        
+        return mean_entropy, max_entropy
+
+
+    def calculate_metric_error(self):
+        metric_errors = dict()
 
         for n_agent, _ in enumerate(self.predictions):
-            guess[n_agent] = dict()
-            metric_error[n_agent] = dict()
+            metric_errors[n_agent] = dict()
             for step, _ in enumerate(self.predictions[n_agent]):
                 # guess
                 step_prediction = self.predictions[n_agent][step]
                 this_guess = step_prediction.index(max(step_prediction))
-                guess[n_agent][step] = this_guess
 
                 # metric error (A* distance between guessed goal and actual goal)
                 path = a_star(self.my_map, self.agent_goals[n_agent], self.goals[this_guess], self.heuristics[this_guess],
@@ -67,5 +84,36 @@ class DataCruncher(object):
                 if path is None:
                     raise BaseException('No solutions')
                 path_length = len(path) - 1
-                metric_error[n_agent][step] = path_length
-        return guess, metric_error
+                metric_errors[n_agent][step] = path_length
+        
+        # mean of metric errors
+        mean_metric_error = []
+        for step, _ in enumerate(metric_errors[0]):
+            step_values = []
+            for n_agent, _ in enumerate(metric_errors):
+                if step in metric_errors[n_agent]:
+                    step_values.append(metric_errors[n_agent][step])
+            mean_metric_error.append(np.mean(step_values))
+
+        # maximum entropy for step
+        max_metric_error = []
+        for step, _ in enumerate(metric_errors[0]):
+            step_values = []
+            for n_agent, _ in enumerate(metric_errors):
+                if step in metric_errors[n_agent]:
+                    step_values.append(metric_errors[n_agent][step])
+            max_metric_error.append(max(step_values))
+
+        return mean_metric_error, max_metric_error
+    
+    def calculate_guess(self):
+        guess = dict()
+
+        for n_agent, _ in enumerate(self.predictions):
+            guess[n_agent] = dict()
+            for step, _ in enumerate(self.predictions[n_agent]):
+                # guess
+                step_prediction = self.predictions[n_agent][step]
+                this_guess = step_prediction.index(max(step_prediction))
+                guess[n_agent][step] = this_guess
+        return guess

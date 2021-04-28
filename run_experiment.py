@@ -140,8 +140,8 @@ if __name__ == '__main__':
         observer = SDObserver(my_map, paths, starts, goals)
         predictions = observer.elaborate_predictions()
         data_cruncher = DataCruncher(my_map, paths, starts, goals, agent_goals, predictions)
-        entropy = data_cruncher.calculate_entropy()
-        guess, metric_error = data_cruncher.calculate_guess_and_metric_error()
+        mean_entropy, max_entropy = data_cruncher.calculate_entropy()
+        mean_metric_error, max_metric_error = data_cruncher.calculate_metric_error()
 
         cost = get_sum_of_cost(paths)
         solved_experiment = {
@@ -151,9 +151,10 @@ if __name__ == '__main__':
             "agent_goals": agent_goals,
             "paths": paths,
             "predictions": predictions,
-            "entropy": entropy,
-            "guess": guess,
-            "metric_error": metric_error,
+            "mean_entropy": mean_entropy,
+            "max_entropy": max_entropy,
+            "mean_metric_error": mean_metric_error,
+            "max_metric_error": max_metric_error,
             "cost": cost
         }
 
